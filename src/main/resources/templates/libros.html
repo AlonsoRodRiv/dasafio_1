@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Libros de Gutendex</title>
+</head>
+<body>
+<h1>Libros de Gutendex</h1>
+<ul>
+    <li th:each="libro : ${libros}">
+        <h2 th:text="${libro.titulo}"></h2>
+        <p>Idiomas: <span th:text="${libro.idiomas}"></span></p>
+        <p>Descargas: <span th:text="${libro.numeroDeDescargas}"></span></p>
+    </li>
+</ul>
+</body>
+</html>

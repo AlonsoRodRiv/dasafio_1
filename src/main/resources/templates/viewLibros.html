@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Search</title>
+    <!-- Agrega los enlaces a tus archivos CSS aquí -->
+</head>
+<!-- Tailwind CSS config -->
+<script src="https://cdn.tailwindcss.com/3.3.0"></script>
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            fontFamily: {
+                sans: ["Roboto", "sans-serif"],
+                body: ["Roboto", "sans-serif"],
+                mono: ["ui-monospace", "monospace"],
+            },
+        },
+        corePlugins: {
+            preflight: false,
+        },
+    };
+</script>
+<body>
+<div class="container mx-auto p-4">
+    <div class="p-4">
+        <h2 class="text-xl font-semibold">WWW.FAKELIBROS.COM</h2>
+    </div>
+    <input
+            id="bookTitleInput"
+            type="text"
+            placeholder="Enter book title"
+            class="w-full p-2 border border-zinc-300 rounded-lg mb-4 dark:bg-zinc-800 dark:text-white"
+    />
+    <select id="bookFilterSelect" class="w-full p-2 border border-zinc-300 rounded-lg mb-4 dark:bg-zinc-800 dark:text-white"
+    >
+        <option value="">-- Select Filter --</option>
+        <option value="title">Title</option>
+        <option value="most_downloaded">Most Downloaded</option>
+    </select>
+    <button  id="searchButton" class="bg-blue-500 text-white p-2 rounded-lg mb-4">Search</button>
+
+    <div class=" books-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div th:each="libro : ${libros}" class="bg-white rounded-lg shadow-md p-4 dark:bg-zinc-800">
+            <img th:src="@{${libro.formatos.imagen()}}" alt="Book Cover" class="w-full h-48 object-cover mb-4" />
+            <h3 th:text="${libro.titulo}" class="text-lg font-semibold mb-2">Book Title</h3>
+            <p><strong>Language:</strong> <span th:text="${libro.idiomas}">English</span></p>
+            <p><strong>NumerodeDescargas:</strong> <span th:text="${libro.numeroDeDescargas}">Descargas</span></p>
+
+        </div>
+    </div>
+</div>
+<script>
+    const bookTitleInput = document.getElementById('bookTitleInput');
+    const searchButton = document.getElementById('searchButton');
+    const bookFilterSelect = document.getElementById('bookFilterSelect');
+    const booksContainer = document.querySelector('.books-container'); // Selecciona el contenedor de libros
+// Filtro
+    bookFilterSelect.addEventListener('change', async () => {
+        if (bookFilterSelect.value === 'most_downloaded') {
+            try {
+                const response = await fetch('/api/libros/top10');
+                const books = await response.json();
+                renderBooks(books);
+            } catch (error) {
+                console.error('Error al obtener los libros más descargados:', error);
+            }
+        }
+        else if (bookFilterSelect.value === 'title') {
+            try {
+                const response = await fetch('/api/libros/titulo');
+                const books = await response.json();
+                renderBooks(books);
+            } catch (error) {
+                console.error('Error al obtener los libros:', error);
+            }
+        }
+    });
+    // Busqueda
+    searchButton.addEventListener('click', async () => {
+        const bookTitle = bookTitleInput.value.trim();
+
+
+        if (bookTitle) {
+            try {
+                const response = await fetch(`/api/libros/${encodeURIComponent(bookTitle)}`);
+                const books = await response.json();
+                renderBooks(books);
+            } catch (error) {
+                console.error('Error al obtener los libros:', error);
+            }
+        } else {
+            alert('Por favor, ingrese un título de libro.');
+        }
+    });
+    function renderBooks(books) {
+        booksContainer.innerHTML = ''; // Limpia el contenedor de libros
+
+        books.forEach(book => {
+            const bookElement = `
+                <div class="bg-white rounded-lg shadow-md p-4 dark:bg-zinc-800">
+                    <img src="${book.formatos.imagen}" alt="Book Cover" class="w-full h-48 object-cover mb-4" />
+                    <h3 class="text-lg font-semibold mb-2">${book.titulo}</h3>
+                    <p><strong>Language:</strong> <span>${book.idiomas}</span></p>
+                    <p><strong>NumerodeDescargas:</strong> <span>${book.numeroDeDescargas}</span></p>
+                </div>
+            `;
+
+            booksContainer.insertAdjacentHTML('beforeend', bookElement);
+        });
+    }
+</script>
+</body>
+</html>
